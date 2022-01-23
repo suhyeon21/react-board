@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import "./App.css";
 
 class App extends Component {
   state = {
+    maxNo: 3, //기본적으로 2개의 데이터 갖고 있는 상황이기 때문
     boards: [
       {
         brdno: 1,
@@ -18,11 +18,23 @@ class App extends Component {
       },
     ],
   };
+
+  handleSaveData = (data) => {
+    this.setState({
+      boards: this.state.boards.concat({
+        brdno: this.state.maxNo++,
+        brddate: new Date(),
+        ...data, // ...은 뭔가 복사해온다는 것 같은데 여기서 data에 뭐가 들어온다는 거지?입력값인가?
+      }),
+    });
+  };
+
   render() {
     const { boards } = this.state; //const boards = this.state.boards
 
     return (
       <div>
+        <BoardForm onSaveData={this.handleSaveData} />
         <table border="1">
           <tbody>
             <tr align="center">
@@ -43,8 +55,8 @@ class App extends Component {
 
 class BoardItem extends React.Component {
   render() {
-    const r = this.props.row;
-    console.log(r);
+    // const r = this.props.row;
+    // console.log(r);
     return (
       <tr>
         <td>{this.props.row.brdno}</td>
@@ -56,4 +68,38 @@ class BoardItem extends React.Component {
   }
 }
 
+class BoardForm extends Component {
+  //1
+  state = {};
+
+  handleChange = (e) => {
+    this.setState({
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+    this.props.onSaveData(this.state); //이 부분 왜 쓴건지 모르겠음, 이 함수 자체가 이해가 안감. state 비우는 건가
+    this.setState({});
+  };
+
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <input
+          placeholder="title"
+          name="brdtitle"
+          onChange={this.handleChange} //입력 상자와 handleChange 연결, 컴포넌트 내의 변수나 함수 참조할 경우 this 붙임
+        />
+        <input
+          placeholder="name"
+          name="brdwriter"
+          onChange={this.handleChange}
+        />
+        <button type="submit">Save</button>
+      </form>
+    );
+  }
+}
 export default App;
