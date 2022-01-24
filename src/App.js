@@ -24,8 +24,14 @@ class App extends Component {
       boards: this.state.boards.concat({
         brdno: this.state.maxNo++,
         brddate: new Date(),
-        ...data, // ...은 뭔가 복사해온다는 것 같은데 여기서 data에 뭐가 들어온다는 거지?입력값인가?
+        ...data, // ...은 뭔가 복사해온다는 것 같은데 여기서 data에 뭐가 들어온다는 거지?title과 name은 입력값 받아서 작성하니까
       }),
+    });
+  };
+
+  handleRemove = (brdno) => {
+    this.setState({
+      boards: this.state.boards.filter((row) => row.brdno !== brdno),
     });
   };
 
@@ -44,7 +50,12 @@ class App extends Component {
               <td width="100">Date</td>
             </tr>
             {boards.map((row) => (
-              <BoardItem key={row.brdno} row={row} /> //BoardItem 이라고 앞에 왜 적었지? Boarditem 컴포넌트 이용하려고?
+              <BoardItem
+                key={row.brdno}
+                row={row} //이걸 왜 줬을까, 데이터 하나 하나에 접근하려고?
+                onRemove={this.handleRemove}
+                onSelectRow={this.handleSelectRow}
+              />
             ))}
           </tbody>
         </table>
@@ -54,15 +65,26 @@ class App extends Component {
 }
 
 class BoardItem extends React.Component {
+  handleRemove = () => {
+    const { row, onRemove } = this.props;
+    onRemove(row.brdno);
+  };
+
   render() {
     // const r = this.props.row;
     // console.log(r);
+    console.log(this.props.brdno);
     return (
       <tr>
         <td>{this.props.row.brdno}</td>
-        <td>{this.props.row.brdtitle}</td>
+        <td>
+          <a onClick={this.handleSelectRow}>{this.props.row.brdttile}</a>
+        </td>
         <td>{this.props.row.brdwriter}</td>
         <td>{this.props.row.brddate.toLocaleDateString("ko-KR")}</td>
+        <td>
+          <button onClick={this.handleRemove}>X</button>
+        </td>
       </tr>
     );
   }
