@@ -1,6 +1,10 @@
 import React, { Component } from "react";
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this.child = React.createRef(); //createRef는 특정 DOM을 잡아야 할 때 사용, useRef 방식이랑 비교
+  }
   state = {
     maxNo: 3, //기본적으로 2개의 데이터 갖고 있는 상황이기 때문
     boards: [
@@ -20,13 +24,25 @@ class App extends Component {
   };
 
   handleSaveData = (data) => {
-    this.setState({
-      boards: this.state.boards.concat({
-        brdno: this.state.maxNo++,
-        brddate: new Date(),
-        ...data, // ...은 뭔가 복사해온다는 것 같은데 여기서 data에 뭐가 들어온다는 거지?title과 name은 입력값 받아서 작성하니까
-      }),
-    });
+    let boards = this.state.boards;
+    if (data.brdno === null || data.brdno === "" || data.brdno === undefined) {
+      //new : Insert
+      this.setState({
+        maxNo: this.state.maxNo + 1,
+        boards: boards.concat({
+          brdno: this.state.maxNo,
+          brddate: new Date(),
+          brdwriter: data.brdwriter,
+          brdtitle: data.brdtitle,
+        }),
+      });
+    } else {
+      this.setState({
+        boards: boards.map((row) =>
+          data.brdno === row.brdno ? { ...data } : row,
+        ),
+      });
+    }
   };
 
   handleRemove = (brdno) => {
@@ -62,6 +78,37 @@ class App extends Component {
       </div>
     );
   }
+
+  handleSelectRow = (row) => {
+    this.child.current.handleSelectRow(row);
+  };
+  render() {
+    const { boards } = this.state;
+
+    return (
+      <div>
+        <BoardForm onSaveData={this.handleSaveData} ref={this.child} />
+        <table border="1">
+          <tbody>
+            <tr align="center">
+              <td width="50">No.</td>
+              <td width="300">Title</td>
+              <td width="100">Name</td>
+              <td width="100">Date</td>
+            </tr>
+            {boards.map((row) => (
+              <BoardItem
+                key={row.brdno}
+                row={row}
+                onRemove={this.handleRemove}
+                onSelectRow={this.handleSelectRow}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
 }
 
 class BoardItem extends React.Component {
@@ -88,10 +135,29 @@ class BoardItem extends React.Component {
       </tr>
     );
   }
+
+  handleSelectRow = () => {
+    const { row, onSelectRow } = this.props;
+    onSelectRow(row);
+  };
+  render() {
+    return (
+      <tr>
+        <td>{this.props.row.brdno}</td>
+        <td>
+          <a onClick={this.handleSelectRow}>{this.props.row.brdtitle}</a>
+        </td>
+        <td>{this.props.row.brdwriter}</td>
+        <td>{this.props.row.brddate.toLocaleDateString("ko-KR")}</td>
+        <td>
+          <button onClick={this.handleRemove}>X</button>
+        </td>
+      </tr>
+    );
+  }
 }
 
 class BoardForm extends Component {
-  //1
   state = {};
 
   handleChange = (e) => {
