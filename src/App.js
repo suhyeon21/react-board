@@ -3,7 +3,7 @@ import React, { Component } from "react";
 class App extends Component {
   constructor(props) {
     super(props);
-    this.child = React.createRef(); //createRef는 특정 DOM을 잡아야 할 때 사용, useRef 방식이랑 비교
+    this.child = React.createRef(); //createRef는 특정 DOM을 잡아야 할 때 사용, 컴포넌트에 접근하여 원하는 값 제공?useRef 방식이랑 비교, 각 컴포넌트의 핸들을 가져오는 ref
   }
   state = {
     maxNo: 3, //기본적으로 2개의 데이터 갖고 있는 상황이기 때문
@@ -125,7 +125,7 @@ class BoardItem extends React.Component {
       <tr>
         <td>{this.props.row.brdno}</td>
         <td>
-          <a onClick={this.handleSelectRow}>{this.props.row.brdttile}</a>
+          <a onClick={this.handleSelectRow}>{this.props.row.brdtitle}</a>
         </td>
         <td>{this.props.row.brdwriter}</td>
         <td>{this.props.row.brddate.toLocaleDateString("ko-KR")}</td>
@@ -158,18 +158,28 @@ class BoardItem extends React.Component {
 }
 
 class BoardForm extends Component {
-  state = {};
+  state = {
+    brdwriter: "",
+    brdtitle: "", //원래 state 비워놨는데 이거 왜 적었는지 모르겠음
+  };
 
   handleChange = (e) => {
     this.setState({
       [e.target.name]: e.target.value,
     });
   };
+  handleSelectRow = (row) => {
+    this.setState(row); //부모로부터 받은 값 그대로state로
+  };
 
   handleSubmit = (e) => {
     e.preventDefault();
-    this.props.onSaveData(this.state); //이 부분 왜 쓴건지 모르겠음, 이 함수 자체가 이해가 안감. state 비우는 건가
-    this.setState({});
+    this.props.onSaveData(this.state);
+    this.setState({
+      brdno: "",
+      brdwriter: "",
+      brdtitle: "",
+    });
   };
 
   render() {
@@ -178,11 +188,13 @@ class BoardForm extends Component {
         <input
           placeholder="title"
           name="brdtitle"
+          value={this.state.brdtitle}
           onChange={this.handleChange} //입력 상자와 handleChange 연결, 컴포넌트 내의 변수나 함수 참조할 경우 this 붙임
         />
         <input
           placeholder="name"
           name="brdwriter"
+          value={this.state.brdwriter}
           onChange={this.handleChange}
         />
         <button type="submit">Save</button>
